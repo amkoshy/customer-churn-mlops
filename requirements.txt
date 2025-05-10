@@ -1,0 +1,11 @@
+sagemaker
+pandas
+numpy
+scikit-learn
+scipy
+matplotlib
+ipykernel
+kagglehub
+boto3
+fsspec
+s3fs
