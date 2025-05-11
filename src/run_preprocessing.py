@@ -2,6 +2,9 @@ import boto3
 import sagemaker
 from sagemaker.sklearn.processing import SKLearnProcessor
 from sagemaker.processing import ProcessingInput, ProcessingOutput
+from dotenv import load_dotenv
+import os
+
 
 # AWS region & S3 bucket setup
 region = "ap-south-1"
@@ -14,8 +17,13 @@ sagemaker_session = sagemaker.Session(
     default_bucket=bucket_name  # This forces SageMaker to use YOUR bucket
 )
 
-# Replace with your actual SageMaker execution role ARN
-role = "arn:aws:iam::566543276337:role/service-role/AmazonSageMaker-ExecutionRole-20250509T121630"
+
+# Load environment variables from .env file
+load_dotenv()
+role = os.getenv("SAGEMAKER_ROLE_ARN")  # Ensure this is set in your .env file
+
+if role is None:
+    raise ValueError("SAGEMAKER_ROLE_ARN not found. Check your .env file.")
 
 # Create the SKLearnProcessor object
 sklearn_processor = SKLearnProcessor(
@@ -28,7 +36,8 @@ sklearn_processor = SKLearnProcessor(
 
 # Input and output locations (within your own bucket)
 input_s3_uri = f"s3://{bucket_name}/WA_Fn-UseC_-Telco-Customer-Churn.csv"
-output_s3_uri = f"s3://{bucket_name}/churn/processed"
+train_output_s3_uri = f"s3://{bucket_name}/churn/processed/train"
+test_output_s3_uri = f"s3://{bucket_name}/churn/processed/test"
 
 # Run the preprocessing job
 sklearn_processor.run(
@@ -41,8 +50,12 @@ sklearn_processor.run(
     ],
     outputs=[
         ProcessingOutput(
-            source="/opt/ml/processing/output",
-            destination=output_s3_uri
+            source="/opt/ml/processing/train",
+            destination=train_output_s3_uri
+        ),
+        ProcessingOutput(
+            source="/opt/ml/processing/test",
+            destination=test_output_s3_uri
         )
     ]
 )

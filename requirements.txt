@@ -9,3 +9,4 @@ kagglehub
 boto3
 fsspec
 s3fs
+python-dotenv
