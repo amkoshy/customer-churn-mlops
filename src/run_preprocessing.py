@@ -37,6 +37,7 @@ sklearn_processor = SKLearnProcessor(
 # Input and output locations (within your own bucket)
 input_s3_uri = f"s3://{bucket_name}/WA_Fn-UseC_-Telco-Customer-Churn.csv"
 train_output_s3_uri = f"s3://{bucket_name}/churn/processed/train"
+val_output_s3_uri = f"s3://{bucket_name}/churn/processed/val"
 test_output_s3_uri = f"s3://{bucket_name}/churn/processed/test"
 
 # Run the preprocessing job
@@ -52,6 +53,10 @@ sklearn_processor.run(
         ProcessingOutput(
             source="/opt/ml/processing/train",
             destination=train_output_s3_uri
+        ),
+        ProcessingOutput(
+            source="/opt/ml/processing/val",
+            destination=val_output_s3_uri
         ),
         ProcessingOutput(
             source="/opt/ml/processing/test",

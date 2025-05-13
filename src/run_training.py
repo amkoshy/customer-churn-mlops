@@ -40,6 +40,9 @@ if role is None:
 prefix = "churn"
 train_input_s3 = f"s3://{bucket_name}/{prefix}/processed/train/train.csv"
 train_input = sagemaker.inputs.TrainingInput(train_input_s3, content_type="text/csv")
+#add val_input_s3
+val_input_s3 = f"s3://{bucket_name}/{prefix}/processed/val/val.csv"
+val_input = sagemaker.inputs.TrainingInput(val_input_s3, content_type="text/csv")
 
 # Use the script provided as an argument
 entry_point_script = args.script
@@ -64,4 +67,8 @@ estimator = SKLearn(
 )
 
 # Launch training job
-estimator.fit({"train": train_input})
+estimator.fit({
+    "train": train_input,
+    "val": val_input
+})
+#passing a "train" channel, and a "val" (or "validation") channel

@@ -3,34 +3,21 @@
 import pandas as pd
 import joblib
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 import os
 
-# Load preprocessed training data
-input_path = "/opt/ml/input/data/train/train.csv"
-df = pd.read_csv(input_path)
+# Load preprocessed training and validation data
+train_path = "/opt/ml/input/data/train/train.csv"
+val_path = "/opt/ml/input/data/val/val.csv"
 
-# Drop ID column if exists
-if "customerID" in df.columns:
-    df = df.drop("customerID", axis=1)
-
-# Ensure 'Churn' column exists and is binary
-if "Churn" in df.columns:
-    df["Churn"] = df["Churn"].map({"Yes": 1, "No": 0})
-
-# Drop rows where target is missing
-df = df.dropna(subset=["Churn"])
-
-# Convert categorical columns to numeric (after target handling)
-df = pd.get_dummies(df)
+train_df = pd.read_csv(train_path)
+val_df = pd.read_csv(val_path)
 
 # Prepare features and labels
-X = df.drop("Churn", axis=1)
-y = df["Churn"]
-
-# Train-test split
-X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train = train_df.drop("Churn", axis=1)
+y_train = train_df["Churn"]
+X_val = val_df.drop("Churn", axis=1)
+y_val = val_df["Churn"]
 
 # Train KNN classifier
 algorithm_name = "knn"  # Specify the algorithm name
