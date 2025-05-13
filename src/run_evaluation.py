@@ -2,6 +2,7 @@ import argparse
 import os
 import boto3
 import sagemaker
+import json
 from dotenv import load_dotenv
 from sagemaker.sklearn.processing import SKLearnProcessor
 from sagemaker.processing import ProcessingInput, ProcessingOutput
@@ -9,9 +10,24 @@ from datetime import datetime
 
 # Parse CLI arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("--script", type=str, required=True, help="Evaluation script (e.g., evaluate.py)")
-parser.add_argument("--model_s3_uri", type=str, required=True, help="S3 path to model.tar.gz")
+parser.add_argument(
+    "--algorithm",
+    type=str,
+    required=True,
+    choices=["knn", "log_regression", "random_forest"],  # Restrict to these models
+    help="Specify the algorithm (e.g., 'knn', 'log_regression', 'random_forest')."
+)
 args = parser.parse_args()
+
+# Load models.json to find the S3 URI for the specified algorithm
+models_file_path = os.path.join(os.path.dirname(__file__), "../models.json")
+with open(models_file_path, "r") as f:
+    models = json.load(f)
+
+if args.algorithm not in models:
+    raise ValueError(f"Algorithm '{args.algorithm}' not found in models.json. Available options: {list(models.keys())}")
+
+model_s3_uri = models[args.algorithm]
 
 # AWS config
 region = "ap-south-1"
@@ -42,14 +58,14 @@ output_s3_path = f"s3://{bucket_name}/churn/evaluation/{datetime.now().strftime(
 
 # Run job
 script_processor.run(
-    code=args.script,
+    code="evaluate.py",  # Hardcoded evaluation script
     arguments=[
         "--model-path", "/opt/ml/processing/model/model.tar.gz",
         "--test-data", "/opt/ml/processing/test/test.csv",
-        "--model-s3-uri", args.model_s3_uri 
+        "--model-s3-uri", model_s3_uri
     ],
     inputs=[
-        ProcessingInput(source=args.model_s3_uri, destination="/opt/ml/processing/model"),
+        ProcessingInput(source=model_s3_uri, destination="/opt/ml/processing/model"),
         ProcessingInput(source=test_data_s3_path, destination="/opt/ml/processing/test")
     ],
     outputs=[
