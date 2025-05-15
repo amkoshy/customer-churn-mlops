@@ -1,0 +1,10 @@
+Algorithm: log_regression
+
+              precision    recall  f1-score   support
+
+           0       0.84      0.89      0.86      1033
+           1       0.62      0.52      0.57       374
+
+    accuracy                           0.79      1407
+   macro avg       0.73      0.70      0.71      1407
+weighted avg       0.78      0.79      0.78      1407
